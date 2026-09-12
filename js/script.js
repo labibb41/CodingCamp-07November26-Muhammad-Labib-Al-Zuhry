@@ -27,6 +27,12 @@ let quicklinksState = {
     nextId: 6
 };
 
+// Modal state (replaces window.pendingDeleteTaskId and window.currentEditingTaskId)
+let modalState = {
+    pendingDeleteTaskId: null,
+    currentEditingTaskId: null
+};
+
 // ===== INITIALIZATION =====
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -129,15 +135,24 @@ function saveName() {
         return;
     }
     
-    localStorage.setItem('userName', name);
-    updateGreeting();
-    closeNameModal();
+    try {
+        localStorage.setItem('userName', name);
+        updateGreeting();
+        closeNameModal();
+    } catch (error) {
+        console.error('Failed to save name:', error);
+        alert('Failed to save name. Please try again.');
+    }
 }
 
 function loadUserSettings() {
-    const userName = localStorage.getItem('userName');
-    if (!userName) {
-        localStorage.setItem('userName', '');
+    try {
+        const userName = localStorage.getItem('userName');
+        if (!userName) {
+            localStorage.setItem('userName', '');
+        }
+    } catch (error) {
+        console.error('Failed to load user settings:', error);
     }
 }
 
@@ -145,6 +160,11 @@ function loadUserSettings() {
 
 function startTimer() {
     if (timerState.isRunning) return;
+    
+    // Clear any existing interval to prevent race condition
+    if (timerState.intervalId) {
+        clearInterval(timerState.intervalId);
+    }
     
     timerState.isRunning = true;
     document.getElementById('startBtn').disabled = true;
@@ -190,30 +210,54 @@ function updateTimerDisplay() {
 // ===== LOCAL STORAGE - TASKS =====
 
 function loadTasks() {
-    const saved = localStorage.getItem('tasks');
-    if (saved) {
-        taskState.tasks = JSON.parse(saved);
-        // Calculate next ID
-        if (taskState.tasks.length > 0) {
-            taskState.nextId = Math.max(...taskState.tasks.map(t => t.id)) + 1;
+    try {
+        const saved = localStorage.getItem('tasks');
+        if (saved) {
+            taskState.tasks = JSON.parse(saved);
+            // Calculate next ID
+            if (taskState.tasks.length > 0) {
+                const validIds = taskState.tasks
+                    .map(t => typeof t.id === 'number' ? t.id : 0)
+                    .filter(id => id > 0);
+                taskState.nextId = Math.max(...validIds, 0) + 1;
+            }
         }
+    } catch (error) {
+        console.error('Failed to load tasks:', error);
+        taskState.tasks = [];
+        taskState.nextId = 1;
     }
     
     // Load sort preference
-    const savedSort = localStorage.getItem('taskSortType');
-    if (savedSort) {
-        taskState.sortType = savedSort;
-        document.getElementById('sortSelect').value = savedSort;
+    try {
+        const savedSort = localStorage.getItem('taskSortType');
+        if (savedSort) {
+            taskState.sortType = savedSort;
+            document.getElementById('sortSelect').value = savedSort;
+        }
+    } catch (error) {
+        console.error('Failed to load sort preference:', error);
     }
 }
 
 function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(taskState.tasks));
+    try {
+        localStorage.setItem('tasks', JSON.stringify(taskState.tasks));
+    } catch (error) {
+        console.error('Failed to save tasks:', error);
+        if (error.name === 'QuotaExceededError') {
+            alert('Storage quota exceeded. Please delete some tasks.');
+        }
+    }
 }
 
 function saveSortPreference(sortType) {
-    taskState.sortType = sortType;
-    localStorage.setItem('taskSortType', sortType);
+    try {
+        taskState.sortType = sortType;
+        localStorage.setItem('taskSortType', sortType);
+    } catch (error) {
+        console.error('Failed to save sort preference:', error);
+    }
 }
 
 // ===== CHALLENGE 2: PREVENT DUPLICATE TASKS =====
@@ -272,7 +316,7 @@ function deleteTask(id) {
     const task = taskState.tasks.find(t => t.id === id);
     if (!task) return;
     
-    window.pendingDeleteTaskId = id;
+    modalState.pendingDeleteTaskId = id;
     document.getElementById('deleteTaskName').textContent = `"${task.text}"`;
     
     const modal = document.getElementById('deleteConfirmModal');
@@ -280,7 +324,7 @@ function deleteTask(id) {
 }
 
 function confirmDelete() {
-    const id = window.pendingDeleteTaskId;
+    const id = modalState.pendingDeleteTaskId;
     taskState.tasks = taskState.tasks.filter(t => t.id !== id);
     saveTasks();
     closeDeleteConfirmModal();
@@ -290,7 +334,7 @@ function confirmDelete() {
 function closeDeleteConfirmModal() {
     const modal = document.getElementById('deleteConfirmModal');
     modal.classList.remove('show');
-    window.pendingDeleteTaskId = null;
+    modalState.pendingDeleteTaskId = null;
 }
 
 function toggleTaskDone(id) {
@@ -307,7 +351,7 @@ function openEditTaskModal(id) {
     if (!task) return;
     
     // Set current task in edit modal
-    window.currentEditingTaskId = id;
+    modalState.currentEditingTaskId = id;
     
     // Populate fields
     document.getElementById('editTaskText').value = task.text;
@@ -334,11 +378,11 @@ function openEditTaskModal(id) {
 function closeEditTaskModal() {
     const modal = document.getElementById('editTaskModal');
     modal.classList.remove('show');
-    window.currentEditingTaskId = null;
+    modalState.currentEditingTaskId = null;
 }
 
 function saveEditTask() {
-    const taskId = window.currentEditingTaskId;
+    const taskId = modalState.currentEditingTaskId;
     const task = taskState.tasks.find(t => t.id === taskId);
     
     if (!task) return;
@@ -448,14 +492,14 @@ function renderTasks() {
                 if (sameDay) {
                     scheduleHtml = `
                         <div class="task-schedule">
-                            <span class="schedule-day">${startDay}</span>
-                            <span class="schedule-time">${startTime} - ${endTime}</span>
+                            <span class="schedule-day">${escapeHtml(startDay)}</span>
+                            <span class="schedule-time">${escapeHtml(startTime)} - ${escapeHtml(endTime)}</span>
                         </div>
                     `;
                 } else {
                     scheduleHtml = `
                         <div class="task-schedule">
-                            <span class="schedule-range">${startDay} ${startTime} → ${endDay} ${endTime}</span>
+                            <span class="schedule-range">${escapeHtml(startDay)} ${escapeHtml(startTime)} → ${escapeHtml(endDay)} ${escapeHtml(endTime)}</span>
                         </div>
                     `;
                 }
@@ -488,14 +532,29 @@ function renderTasks() {
 // ===== QUICK LINKS =====
 
 function loadQuicklinks() {
-    const saved = localStorage.getItem('quicklinks');
-    if (saved) {
-        quicklinksState.links = JSON.parse(saved);
+    try {
+        const saved = localStorage.getItem('quicklinks');
+        if (saved) {
+            quicklinksState.links = JSON.parse(saved);
+        }
+    } catch (error) {
+        console.error('Failed to load quick links:', error);
+        quicklinksState.links = [
+            { id: 1, name: 'Google', url: 'https://google.com', icon: '🔍' },
+            { id: 2, name: 'GitHub', url: 'https://github.com', icon: '🐙' },
+            { id: 3, name: 'YouTube', url: 'https://youtube.com', icon: '📺' },
+            { id: 4, name: 'Gmail', url: 'https://gmail.com', icon: '📧' },
+            { id: 5, name: 'LinkedIn', url: 'https://linkedin.com', icon: '💼' }
+        ];
     }
 }
 
 function saveQuicklinks() {
-    localStorage.setItem('quicklinks', JSON.stringify(quicklinksState.links));
+    try {
+        localStorage.setItem('quicklinks', JSON.stringify(quicklinksState.links));
+    } catch (error) {
+        console.error('Failed to save quick links:', error);
+    }
 }
 
 function renderQuicklinks() {
@@ -591,6 +650,25 @@ function setupEventListeners() {
     document.getElementById('deleteConfirmModal').addEventListener('click', (e) => {
         if (e.target.id === 'deleteConfirmModal') {
             closeDeleteConfirmModal();
+        }
+    });
+    
+    // Escape key support for all modals (Task #9)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const nameModal = document.getElementById('nameModal');
+            const editTaskModal = document.getElementById('editTaskModal');
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            
+            if (nameModal.classList.contains('show')) {
+                closeNameModal();
+            }
+            if (editTaskModal.classList.contains('show')) {
+                closeEditTaskModal();
+            }
+            if (deleteConfirmModal.classList.contains('show')) {
+                closeDeleteConfirmModal();
+            }
         }
     });
 }
