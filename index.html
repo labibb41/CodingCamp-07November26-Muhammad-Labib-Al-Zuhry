@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header: Greeting & Time -->
+        <header class="header">
+            <div class="header-top">
+                <h1 id="greeting">Good Morning</h1>
+                <button class="btn-name" id="setNameBtn" title="Set your name">✏️</button>
+            </div>
+            <p id="date">Friday, September 11, 2026</p>
+            <p id="time">14:45:30</p>
+        </header>
+
+        <!-- Focus Timer -->
+        <section class="timer-section">
+            <h2>Focus Timer</h2>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-controls">
+                <button id="startBtn" class="btn">START</button>
+                <button id="stopBtn" class="btn">STOP</button>
+                <button id="resetBtn" class="btn">RESET</button>
+            </div>
+        </section>
+
+        <!-- To-Do List -->
+        <section class="todo-section">
+            <div class="todo-header">
+                <h2>To-Do List</h2>
+                <div class="sort-controls">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="date">Date (Newest First)</option>
+                        <option value="alphabetic">Alphabetic (A-Z)</option>
+                        <option value="status">Status (Undone First)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="todo-input-area">
+                <input 
+                    type="text" 
+                    id="taskInput" 
+                    placeholder="Add a new task..."
+                    class="input-field"
+                >
+                <button id="addBtn" class="btn">ADD</button>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <ul id="taskList" class="task-list"></ul>
+        </section>
+
+        <!-- Quick Links -->
+        <section class="quicklinks-section">
+            <h2>Quick Links</h2>
+            <div class="quicklinks-container" id="quicklinksContainer"></div>
+        </section>
+    </div>
+
+    <!-- Name Modal -->
+    <div id="nameModal" class="modal">
+        <div class="modal-content">
+            <h3>Enter Your Name</h3>
+            <input 
+                type="text" 
+                id="nameInput" 
+                placeholder="Your name..." 
+                class="input-field"
+                maxlength="50"
+            >
+            <div class="modal-buttons">
+                <button id="saveName" class="btn">Save</button>
+                <button id="cancelName" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content edit-modal-content">
+            <h3>Edit Task</h3>
+            
+            <div class="form-group">
+                <label for="editTaskText">Task Description:</label>
+                <input 
+                    type="text" 
+                    id="editTaskText" 
+                    placeholder="What's your task?" 
+                    class="input-field"
+                >
+            </div>
+
+            <div class="form-section">
+                <h4>Start Schedule</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTaskStartDay">Day:</label>
+                        <select id="editTaskStartDay" class="input-field">
+                            <option value="">Select day...</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editTaskStartTime">Time:</label>
+                        <input 
+                            type="time" 
+                            id="editTaskStartTime" 
+                            class="input-field"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>End Schedule</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTaskEndDay">Day:</label>
+                        <select id="editTaskEndDay" class="input-field">
+                            <option value="">Select day...</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editTaskEndTime">Time:</label>
+                        <input 
+                            type="time" 
+                            id="editTaskEndTime" 
+                            class="input-field"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="saveEditTask" class="btn">Save Task</button>
+                <button id="cancelEditTask" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content delete-modal">
+            <div class="delete-icon">🗑️</div>
+            <h3>Delete Task?</h3>
+            <p>Are you sure you want to delete this task?</p>
+            <p class="task-name-preview" id="deleteTaskName"></p>
+            <div class="modal-buttons">
+                <button id="confirmDelete" class="btn btn-danger">Delete</button>
+                <button id="cancelDelete" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
