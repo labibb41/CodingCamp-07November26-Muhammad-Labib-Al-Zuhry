@@ -5,7 +5,8 @@ let timerState = {
     minutes: 25,
     seconds: 0,
     isRunning: false,
-    intervalId: null
+    intervalId: null,
+    totalMinutes: 25  // CHALLENGE 5: Custom Pomodoro Time
 };
 
 // Task state
@@ -40,6 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
     loadQuicklinks();
     loadUserSettings();
+    
+    // CHALLENGE 4: Initialize theme
+    initTheme();
+    
+    // CHALLENGE 5: Initialize Pomodoro time
+    initPomodoroTime();
     
     // Initialize displays
     updateClock();
@@ -103,6 +110,68 @@ function updateGreeting() {
     }
     
     document.getElementById('greeting').textContent = greeting;
+}
+
+// ===== CHALLENGE 4: LIGHT / DARK MODE =====
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        updateThemeButton();
+    }
+}
+
+function toggleTheme() {
+    const isDarkMode = document.body.classList.toggle('dark-mode');
+    const theme = isDarkMode ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+    updateThemeButton();
+}
+
+function updateThemeButton() {
+    const button = document.getElementById('themeToggle');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    button.textContent = isDarkMode ? '☀️' : '🌙';
+}
+
+// ===== CHALLENGE 5: CUSTOM POMODORO TIME =====
+
+function initPomodoroTime() {
+    const savedTime = localStorage.getItem('pomodoroTime');
+    if (savedTime) {
+        timerState.totalMinutes = parseInt(savedTime);
+        timerState.minutes = timerState.totalMinutes;
+        document.getElementById('pomodoroTimeInput').value = timerState.totalMinutes;
+    }
+}
+
+function changePomodoroTime() {
+    const input = document.getElementById('pomodoroTimeInput');
+    let time = parseInt(input.value);
+    
+    // Validation
+    if (isNaN(time) || time < 1) time = 1;
+    if (time > 60) time = 60;
+    
+    // Update state
+    timerState.totalMinutes = time;
+    timerState.minutes = time;
+    timerState.seconds = 0;
+    
+    // Save preference
+    localStorage.setItem('pomodoroTime', time);
+    
+    // Update input in case it was out of range
+    input.value = time;
+    
+    // Update display
+    updateTimerDisplay();
+    
+    // Stop timer if running
+    if (timerState.isRunning) {
+        stopTimer();
+    }
 }
 
 // ===== CHALLENGE 1: CUSTOM NAME IN GREETING =====
@@ -195,7 +264,7 @@ function stopTimer() {
 
 function resetTimer() {
     stopTimer();
-    timerState.minutes = 25;
+    timerState.minutes = timerState.totalMinutes;
     timerState.seconds = 0;
     updateTimerDisplay();
 }
@@ -592,6 +661,9 @@ function setupEventListeners() {
     document.getElementById('stopBtn').addEventListener('click', stopTimer);
     document.getElementById('resetBtn').addEventListener('click', resetTimer);
     
+    // CHALLENGE 5: Pomodoro time input
+    document.getElementById('pomodoroTimeInput').addEventListener('change', changePomodoroTime);
+    
     // Task input
     document.getElementById('addBtn').addEventListener('click', () => {
         addTask(document.getElementById('taskInput').value);
@@ -607,6 +679,9 @@ function setupEventListeners() {
     document.getElementById('sortSelect').addEventListener('change', (e) => {
         handleSortChange(e.target.value);
     });
+    
+    // CHALLENGE 4: Dark mode toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     
     // CHALLENGE 1: Name modal
     document.getElementById('setNameBtn').addEventListener('click', openNameModal);

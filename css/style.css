@@ -94,6 +94,32 @@ body {
     transform: scale(1.1);
 }
 
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-theme {
+    background: none;
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    color: var(--primary-color);
+}
+
+.btn-theme:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: scale(1.1);
+}
+
 .header p {
     font-size: 1.1rem;
     color: var(--text-light);
@@ -210,6 +236,47 @@ section h2 {
 }
 
 /* ===== TIMER SECTION ===== */
+.timer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.timer-header h2 {
+    margin-bottom: 0;
+}
+
+.timer-settings {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timer-settings label {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.time-input {
+    width: 70px;
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    text-align: center;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    transition: border-color 0.3s;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--primary-hover);
+}
+
 .timer-display {
     font-size: 4rem;
     text-align: center;

@@ -12,7 +12,10 @@
         <header class="header">
             <div class="header-top">
                 <h1 id="greeting">Good Morning</h1>
-                <button class="btn-name" id="setNameBtn" title="Set your name">✏️</button>
+                <div class="header-buttons">
+                    <button class="btn-name" id="setNameBtn" title="Set your name">✏️</button>
+                    <button class="btn-theme" id="themeToggle" title="Toggle dark/light mode">🌙</button>
+                </div>
             </div>
             <p id="date">Friday, September 11, 2026</p>
             <p id="time">14:45:30</p>
@@ -20,7 +23,20 @@
 
         <!-- Focus Timer -->
         <section class="timer-section">
-            <h2>Focus Timer</h2>
+            <div class="timer-header">
+                <h2>Focus Timer</h2>
+                <div class="timer-settings">
+                    <label for="pomodoroTimeInput">Minutes:</label>
+                    <input 
+                        type="number" 
+                        id="pomodoroTimeInput" 
+                        min="1" 
+                        max="60" 
+                        value="25"
+                        class="time-input"
+                    >
+                </div>
+            </div>
             <div class="timer-display" id="timerDisplay">25:00</div>
             <div class="timer-controls">
                 <button id="startBtn" class="btn">START</button>
